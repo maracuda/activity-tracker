@@ -1,7 +1,7 @@
 package activitytracker
 
 import activitytracker.EventAnalyzer.Result.*
-import activitytracker.TrackerEvent.Type.IdeState
+import activitytracker.Type.IdeState
 import java.io.File
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -91,7 +91,7 @@ private fun secondsByTask(event: TrackerEvent, map: MutableMap<String, Int>) {
 }
 
 private fun countByActionId(event: TrackerEvent, map: MutableMap<String, Int>) {
-    if (event.type == TrackerEvent.Type.Action) {
+    if (event.type == Type.Action) {
         val key = event.data
         map[key] = map.getOrDefault(key, 0) + 1
     }

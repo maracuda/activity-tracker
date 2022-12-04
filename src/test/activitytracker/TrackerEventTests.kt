@@ -3,7 +3,7 @@ package activitytracker
 import activitytracker.TrackerEvent.Companion.parseDateTime
 import activitytracker.TrackerEvent.Companion.printEvent
 import activitytracker.TrackerEvent.Companion.toTrackerEvent
-import activitytracker.TrackerEvent.Type.IdeState
+import activitytracker.Type.IdeState
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVPrinter

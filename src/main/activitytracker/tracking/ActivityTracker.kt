@@ -1,9 +1,10 @@
 package activitytracker.tracking
 
 import activitytracker.TrackerEvent
-import activitytracker.TrackerEvent.Type.Duration
-import activitytracker.TrackerEvent.Type.IdeState
+import activitytracker.Type.Duration
+import activitytracker.Type.IdeState
 import activitytracker.TrackerLog
+import activitytracker.Type
 import activitytracker.liveplugin.VcsActions
 import activitytracker.liveplugin.VcsActions.Companion.registerVcsListener
 import activitytracker.liveplugin.currentVirtualFile
@@ -110,24 +111,24 @@ class ActivityTracker(
         IdeEventQueue.getInstance().addPostprocessor({ awtEvent: AWTEvent ->
             if (trackMouse && awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_CLICKED) {
                 val eventData = "click:" + awtEvent.button + ":" + awtEvent.clickCount + ":" + awtEvent.modifiers
-                trackerLog.append(captureIdeState(TrackerEvent.Type.MouseEvent, eventData))
+                trackerLog.append(captureIdeState(Type.MouseEvent, eventData))
             }
             if (trackMouse && awtEvent is MouseEvent && awtEvent.id == MouseEvent.MOUSE_MOVED) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
-                    trackerLog.append(captureIdeState(TrackerEvent.Type.MouseEvent, "move:" + awtEvent.x + ":" + awtEvent.y + ":" + awtEvent.modifiers))
+                    trackerLog.append(captureIdeState(Type.MouseEvent, "move:" + awtEvent.x + ":" + awtEvent.y + ":" + awtEvent.modifiers))
                     lastMouseMoveTimestamp = now
                 }
             }
             if (trackMouse && awtEvent is MouseWheelEvent && awtEvent.id == MouseEvent.MOUSE_WHEEL) {
                 val now = currentTimeMillis()
                 if (now - lastMouseMoveTimestamp > mouseMoveEventsThresholdMs) {
-                    trackerLog.append(captureIdeState(TrackerEvent.Type.MouseEvent, "wheel:" + awtEvent.wheelRotation + ":" + awtEvent.modifiers))
+                    trackerLog.append(captureIdeState(Type.MouseEvent, "wheel:" + awtEvent.wheelRotation + ":" + awtEvent.modifiers))
                     lastMouseMoveTimestamp = now
                 }
             }
             if (trackKeyboard && awtEvent is KeyEvent && awtEvent.id == KeyEvent.KEY_PRESSED) {
-                trackerLog.append(captureIdeState(TrackerEvent.Type.KeyEvent, "" + (awtEvent.keyChar.code) + ":" + awtEvent.keyCode + ":" + awtEvent.modifiers))
+                trackerLog.append(captureIdeState(Type.KeyEvent, "" + (awtEvent.keyChar.code) + ":" + awtEvent.keyCode + ":" + awtEvent.modifiers))
             }
             false
         }, parentDisposable)
@@ -140,7 +141,7 @@ class ActivityTracker(
                 // (e.g. commit action shows dialog and finishes only after the dialog is closed).
                 // Action id can be null e.g. on ctrl+o action (class com.intellij.openapi.ui.impl.DialogWrapperPeerImpl$AnCancelAction).
                 val actionId = ActionManager.getInstance().getId(anAction) ?: return
-                trackerLog.append(captureIdeState(TrackerEvent.Type.Action, actionId))
+                trackerLog.append(captureIdeState(Type.Action, actionId))
             }
         }
         ApplicationManager.getApplication()
@@ -151,20 +152,20 @@ class ActivityTracker(
         // doesn't notify about actual commits but only about opening commit dialog (see VcsActions source code for details).
         registerVcsListener(parentDisposable, object: VcsActions.Listener {
             override fun onVcsCommit() {
-                invokeOnEDT { trackerLog.append(captureIdeState(TrackerEvent.Type.VcsAction, "Commit")) }
+                invokeOnEDT { trackerLog.append(captureIdeState(Type.VcsAction, "Commit")) }
             }
 
             override fun onVcsUpdate() {
-                invokeOnEDT { trackerLog.append(captureIdeState(TrackerEvent.Type.VcsAction, "Update")) }
+                invokeOnEDT { trackerLog.append(captureIdeState(Type.VcsAction, "Update")) }
             }
 
             override fun onVcsPush() {
-                invokeOnEDT { trackerLog.append(captureIdeState(TrackerEvent.Type.VcsAction, "Push")) }
+                invokeOnEDT { trackerLog.append(captureIdeState(Type.VcsAction, "Push")) }
             }
         })
     }
 
-    private fun captureIdeState(eventType: TrackerEvent.Type, originalEventData: String): TrackerEvent? {
+    private fun captureIdeState(eventType: Type, originalEventData: String): TrackerEvent? {
         val start = currentTimeMillis()
         try {
             var eventData = originalEventData

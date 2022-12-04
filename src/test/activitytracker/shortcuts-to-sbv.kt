@@ -1,6 +1,6 @@
 package activitytracker
 
-import activitytracker.TrackerEvent.Type.KeyEvent
+import activitytracker.Type.KeyEvent
 import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType.hourOfDay
 import org.joda.time.DateTimeFieldType.millisOfSecond

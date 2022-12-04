@@ -1,6 +1,6 @@
 package activitytracker
 
-import activitytracker.TrackerEvent.Type.IdeState
+import activitytracker.Type.IdeState
 import com.intellij.openapi.util.io.FileUtil
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat

@@ -1,7 +1,7 @@
 package activitytracker.tracking
 
-import activitytracker.TrackerEvent
-import activitytracker.TrackerEvent.Type.CompilationFinished
+import activitytracker.Type
+import activitytracker.Type.CompilationFinished
 import activitytracker.liveplugin.newDisposable
 import activitytracker.liveplugin.registerProjectListener
 import com.intellij.ide.AppLifecycleListener
@@ -13,7 +13,7 @@ import com.intellij.openapi.compiler.CompilerTopics
 interface CompilationTracker {
     fun startActionListener(
         parentDisposable: Disposable,
-        callback: (eventType: TrackerEvent.Type, originalEventData: String) -> Unit
+        callback: (eventType: Type, originalEventData: String) -> Unit
     ) {}
 
     companion object {
@@ -29,7 +29,7 @@ class InitJavaCompilationTracker: AppLifecycleListener {
         CompilationTracker.instance = object: CompilationTracker {
             override fun startActionListener(
                 parentDisposable: Disposable,
-                callback: (eventType: TrackerEvent.Type, originalEventData: String) -> Unit
+                callback: (eventType: Type, originalEventData: String) -> Unit
             ) {
                 registerCompilationListener(parentDisposable, object: CompilationStatusListener {
                     override fun compilationFinished(aborted: Boolean, errors: Int, warnings: Int, compileContext: CompileContext) {

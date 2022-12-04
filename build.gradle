@@ -1,7 +1,8 @@
 plugins {
 	id "org.jetbrains.intellij" version "1.6.0"
-	id "org.jetbrains.kotlin.jvm" version "1.6.21"
+	id "org.jetbrains.kotlin.jvm" version "1.7.21"
     id "java"
+	id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.21'
 }
 
 repositories {
@@ -9,9 +10,12 @@ repositories {
 }
 
 dependencies {
-	implementation "joda-time:joda-time:2.11.1"
+	implementation 'joda-time:joda-time:2.12.1'
     implementation "org.apache.commons:commons-csv:1.9.0"
+	implementation 'com.clickhouse:clickhouse-client:0.3.2'
+	implementation 'com.clickhouse:clickhouse-http-client:0.3.2'
 	testImplementation "junit:junit:4.13.2" // also includes hamcrest-core
+	implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 }
 
 sourceSets {

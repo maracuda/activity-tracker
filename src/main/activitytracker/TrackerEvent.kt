@@ -1,11 +1,27 @@
 package activitytracker
 
+import kotlinx.serialization.Serializable
 import org.apache.commons.csv.CSVPrinter
 import org.apache.commons.csv.CSVRecord
 import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType.*
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormatterBuilder
+
+@Serializable
+data class TrackerEventWithoutDate(
+    val userName: String?,
+    val type: Type?,
+    val data: String?,
+    val projectName: String?,
+    val focusedComponent: String?,
+    val file: String?,
+    val psiPath: String?,
+    val editorLine: Int?,
+    val editorColumn: Int?,
+    val task: String?
+)
+
 
 data class TrackerEvent(
     val time: DateTime,
@@ -20,16 +36,6 @@ data class TrackerEvent(
     val editorColumn: Int,
     val task: String
 ) {
-
-    enum class Type {
-        IdeState,
-        KeyEvent,
-        MouseEvent,
-        Action,
-        VcsAction,
-        CompilationFinished,
-        Duration
-    }
 
     companion object {
         private val dateTimeParseFormat: DateTimeFormatter = createDateTimeParseFormat()

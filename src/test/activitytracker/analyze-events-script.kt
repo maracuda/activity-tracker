@@ -1,6 +1,6 @@
 package activitytracker
 
-import activitytracker.TrackerEvent.Type.*
+import activitytracker.Type.*
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Duration
