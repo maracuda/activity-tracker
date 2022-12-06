@@ -27,24 +27,7 @@ class TrackerLog(private val eventsFilePath: String) {
     private val log = Logger.getInstance(TrackerLog::class.java)
     private val eventQueue: Queue<TrackerEvent> = ConcurrentLinkedQueue()
     private val sendQueue: Queue<TrackerEvent> = ConcurrentLinkedQueue()
-
-    fun writeToClickhouse() {
-
-        val endpoint = ClickHouseNode.of(
-            "localhost",
-            ClickHouseProtocol.HTTP,
-            8123,
-            "productivity"
-        ); // http://localhost:8443?ssl=true&sslmode=NONE
-
-        val client = ClickHouseClient.newInstance(ClickHouseProtocol.HTTP);
-
-        client.connect(endpoint).query("\n" +
-                "\n" +
-                "INSERT INTO productivity.stats VALUES \n" +
-                "(now(), 'bis', 'First', 'ValueValue')\n" +
-                "\n").execute().get()
-    }
+    private var sessionId: UUID = UUID.randomUUID();
 
     fun initWriter(parentDisposable: Disposable, writeFrequencyMs: Long): TrackerLog {
         val fileLogAppenderWork = {
@@ -55,7 +38,7 @@ class TrackerLog(private val eventsFilePath: String) {
                     val csvPrinter = CSVPrinter(writer, CSVFormat.RFC4180)
                     var event: TrackerEvent? = eventQueue.poll()
                     while (event != null) {
-                        csvPrinter.printEvent(event)
+                        csvPrinter.printEvent(sessionId, event)
                         event = eventQueue.poll()
                     }
                     csvPrinter.flush()
@@ -80,7 +63,6 @@ class TrackerLog(private val eventsFilePath: String) {
                 var event: TrackerEvent? = sendQueue.poll()
                 while (event != null) {
 
-
                     val json = Json.encodeToString(
                         TrackerEventWithoutDate(
                             event?.userName,
@@ -99,7 +81,7 @@ class TrackerLog(private val eventsFilePath: String) {
                     client.connect(endpoint).query("\n" +
                             "\n" +
                             "INSERT INTO productivity.stats VALUES \n" +
-                            "('${event?.time?.toString("YYYY-MM-dd HH:mm:ss")}', '${event?.userName}', '${event?.type}', '$json')\n" )
+                            "('$sessionId', '${event?.time?.toString("YYYY-MM-dd HH:mm:ss")}', '${event?.userName}', '${event?.type}', '$json')\n" )
                         .execute().get()
 
                     event = sendQueue.poll()
@@ -150,8 +132,6 @@ class TrackerLog(private val eventsFilePath: String) {
     }
 
     fun rollLog(now: Date = Date()): File {
-        writeToClickhouse();
-
         val postfix = SimpleDateFormat("_yyyy-MM-dd").format(now)
         var rolledStatsFile = File(eventsFilePath + postfix)
         var i = 1
@@ -161,11 +141,13 @@ class TrackerLog(private val eventsFilePath: String) {
         }
 
         FileUtil.rename(File(eventsFilePath), rolledStatsFile)
+
+        sessionId = UUID.randomUUID();
+
         return rolledStatsFile
     }
 
     fun currentLogFile(): File = File(eventsFilePath)
-
     fun isTooLargeToProcess(): Boolean {
         val `2gb` = 2000000000L
         return File(eventsFilePath).length() > `2gb`

@@ -7,6 +7,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeFieldType.*
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormatterBuilder
+import java.util.*
 
 @Serializable
 data class TrackerEventWithoutDate(
@@ -59,6 +60,25 @@ data class TrackerEvent(
                 task
             )
         }
+
+        fun CSVPrinter.printEvent(sessionId: UUID, event: TrackerEvent) = event.apply{
+            printRecord(
+                sessionId,
+                dateTimePrintFormat.print(time),
+                userName,
+                type,
+                data,
+                projectName,
+                focusedComponent,
+                file,
+                psiPath,
+                editorLine,
+                editorColumn,
+                task
+            )
+        }
+
+
 
         fun CSVRecord.toTrackerEvent() = TrackerEvent(
             time = parseDateTime(this[0]),

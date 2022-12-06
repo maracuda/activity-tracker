@@ -5,6 +5,7 @@ import kotlinx.serialization.encodeToString
 import org.joda.time.DateTime
 import org.junit.Test
 import kotlinx.serialization.json.Json
+import java.util.*
 
 class ClickHouseTests {
     @Test fun `try insert`() {
@@ -45,10 +46,7 @@ class ClickHouseTests {
         client.connect(endpoint).query("\n" +
                 "\n" +
                 "INSERT INTO productivity.stats VALUES \n" +
-                "('${event?.time?.toString("YYYY-MM-dd HH:mm:ss")}', '${event?.userName}', '${event?.type}', '$json')\n" )
+                "('${UUID.randomUUID()}','${event?.time?.toString("YYYY-MM-dd HH:mm:ss")}', '${event?.userName}', '${event?.type}', '$json')\n" )
             .execute().get()
-
-
     }
-// YYYY-MM-DD hh:mm:ss
 }
