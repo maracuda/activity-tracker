@@ -28,5 +28,5 @@ from (
                   )
          order by Timestamp, number
          ) as right
-     on left.number = right.number + 1
+     on left.SessionId = right.SessionId and left.number = right.number + 1
 group by SessionId
