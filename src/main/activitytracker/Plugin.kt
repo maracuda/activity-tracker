@@ -98,8 +98,8 @@ class Plugin(
                 pollIdeState = true,
                 pollIdeStateMs = 1000,
                 trackIdeActions = true,
-                trackKeyboard = false,
-                trackMouse = false,
+                trackKeyboard = true,
+                trackMouse = true,
                 mouseMoveEventsThresholdMs = 250
             )
 
