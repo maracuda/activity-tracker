@@ -52,7 +52,7 @@ class TrackerLog(private val eventsFilePath: String) {
         val networkLogAppenderWork = {
             try {
                 val endpoint = ClickHouseNode.of(
-                    "localhost",
+                    "pf24gyvj",
                     ClickHouseProtocol.HTTP,
                     8123,
                     "productivity"
