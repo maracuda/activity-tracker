@@ -49,10 +49,10 @@ class TrackerLog(private val eventsFilePath: String) {
             }
         }
 
-        val networkLogAppenderWork = {
+        val networkLogAppenderWork: () -> Unit = {
             try {
                 val endpoint = ClickHouseNode.of(
-                    "pf24gyvj",
+                    "mrkt-clkhs-1.dev.kontur.ru",
                     ClickHouseProtocol.HTTP,
                     8123,
                     "productivity"
@@ -60,32 +60,20 @@ class TrackerLog(private val eventsFilePath: String) {
 
                 val client = ClickHouseClient.newInstance(ClickHouseProtocol.HTTP);
 
-                var event: TrackerEvent? = sendQueue.poll()
+                var event: TrackerEvent? = sendQueue.poll();
+
+                val eventsToInsert: MutableList<String> = mutableListOf();
                 while (event != null) {
-
-                    val json = Json.encodeToString(
-                        TrackerEventWithoutDate(
-                            event?.userName,
-                            event?.type,
-                            event?.data,
-                            event?.projectName,
-                            event?.focusedComponent,
-                            event?.file,
-                            event?.psiPath,
-                            event?.editorLine,
-                            event?.editorColumn,
-                            event?.task
-                        )
-                    )
-
-                    client.connect(endpoint).query("\n" +
-                            "\n" +
-                            "INSERT INTO productivity.stats VALUES \n" +
-                            "('$sessionId', '${event?.time?.toString("YYYY-MM-dd HH:mm:ss")}', '${event?.userName}', '${event?.type}', '$json')\n" )
-                        .execute().get()
-
+                    eventsToInsert.add(getInsertString(event!!));
                     event = sendQueue.poll()
                 }
+
+                client.connect(endpoint).query("\n" +
+                        "\n" +
+                        "INSERT INTO productivity.stats VALUES \n" +
+                        eventsToInsert.joinToString(",\n"))
+                    .execute().get()
+
             } catch (e: Exception) {
                 log.error(e)
             }
@@ -103,6 +91,25 @@ class TrackerLog(private val eventsFilePath: String) {
             networkFuture.cancel(true)
         }
         return this
+    }
+
+    private fun getInsertString(event: TrackerEvent): String {
+        val json = Json.encodeToString(
+            TrackerEventWithoutDate(
+                event.userName,
+                event.type,
+                event.data,
+                event.projectName,
+                event.focusedComponent,
+                event.file,
+                event.psiPath,
+                event.editorLine,
+                event.editorColumn,
+                event.task
+            )
+        )
+
+        return "('$sessionId', '${event.time.toString("YYYY-MM-dd HH:mm:ss")}', '${event.userName}', '${event.type}', '$json')";
     }
 
     fun append(event: TrackerEvent?) {

@@ -1,6 +1,7 @@
 select sessions.SessionId,
        sessions.username,
        sessions.start,
+       sessions.end,
        sessions.duration,
        hotkeys.hotkeyCount,
        keyboard.keysCount,
@@ -93,4 +94,4 @@ from
           on left.SessionId = right.SessionId and left.number = right.number + 1
      group by SessionId) mouseMoves
     on mouseMoves.SessionId = sessions.SessionId
-order by sessions.start desc
+order by sessions.start desc;
