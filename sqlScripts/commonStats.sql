@@ -1,13 +1,14 @@
-select sessions.SessionId,
-       sessions.username,
-       sessions.start,
-       sessions.end,
-       sessions.duration,
-       hotkeys.hotkeyCount,
-       keyboard.keysCount,
-       mouseClicks.mouseClicksCount,
-       mouseWheels.mouseWheelCount,
-       mouseMoves.distance
+select sessions.SessionId as SessionId,
+       sessions.username as Login,
+       sessions.start as Start,
+       sessions.duration as Duration,
+       hotkeys_1.hotkeyCount as Hotkeys,
+       hotkeys_1.diffCount as DifferentHotkeysCount,
+       hotkeys_2.smartCount as SmartHotkeysCount,
+       keyboard.keysCount as KeyboardsCount,
+       mouseClicks.mouseClicksCount as MouseClicks,
+       mouseWheels.mouseWheelCount as MouseWheels,
+       mouseMoves.distance as MouseDistance
 from
     -- Сессии
     (select SessionId,
@@ -22,12 +23,25 @@ from
 
         -- хоткеи
         left join
-    (select SessionId, count(*) hotkeyCount
+    (select SessionId,
+            count(*) hotkeyCount,
+            count(distinct visitParamExtractString(Value, 'data')) diffCount
      from productivity.stats
      where ActionType = 'Action'
      group by SessionId
-        ) hotkeys
-    on sessions.SessionId = hotkeys.SessionId
+        ) hotkeys_1
+    on sessions.SessionId = hotkeys_1.SessionId
+
+        -- хоткеи умные, которые не Editor
+        left join
+    (select SessionId,
+            count(distinct visitParamExtractString(Value, 'data')) smartCount
+     from productivity.stats
+     where ActionType = 'Action'
+        and startsWith(visitParamExtractString(Value, 'data'), 'Editor') = 0
+     group by SessionId
+        ) hotkeys_2
+    on sessions.SessionId = hotkeys_2.SessionId
 
         -- мышка клики
         left join
@@ -94,4 +108,5 @@ from
           on left.SessionId = right.SessionId and left.number = right.number + 1
      group by SessionId) mouseMoves
     on mouseMoves.SessionId = sessions.SessionId
+where sessions.duration > 4
 order by sessions.start desc;
