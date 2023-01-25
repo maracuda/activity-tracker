@@ -64,7 +64,7 @@ from
     on sessions.SessionId = mouseWheels.SessionId
 
         -- клавиши
-        join
+        left join
     (select SessionId, count(*) keysCount
      from productivity.stats
      where ActionType = 'KeyEvent'
@@ -108,5 +108,4 @@ from
           on left.SessionId = right.SessionId and left.number = right.number + 1
      group by SessionId) mouseMoves
     on mouseMoves.SessionId = sessions.SessionId
-where sessions.duration > 4
 order by sessions.start desc;
