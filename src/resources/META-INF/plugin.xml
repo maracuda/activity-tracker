@@ -1,8 +1,7 @@
 <idea-plugin>
     <id>Activity Tracker Bis</id>
     <name>Activity Tracker Bis</name>
-    <version>0.0.1 alfa</version>
-    <vendor url="https://github.com/dkandalov/activity-tracker">Dmitry Kandalov</vendor>
+    <version>0.0.2 - named task</version>
 
     <description><![CDATA[
         This is a proof-of-concept plugin for tracking and recording IDE user activity.

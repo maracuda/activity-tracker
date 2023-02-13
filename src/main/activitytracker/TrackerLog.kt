@@ -49,6 +49,8 @@ class TrackerLog(private val eventsFilePath: String) {
             }
         }
 
+        val taskName = getTaskName();
+
         val networkLogAppenderWork: () -> Unit = {
             try {
                 val endpoint = ClickHouseNode.of(
@@ -64,13 +66,13 @@ class TrackerLog(private val eventsFilePath: String) {
 
                 val eventsToInsert: MutableList<String> = mutableListOf();
                 while (event != null) {
-                    eventsToInsert.add(getInsertString(event!!));
+                    eventsToInsert.add(getInsertString(event!!, taskName));
                     event = sendQueue.poll()
                 }
 
                 client.connect(endpoint).query("\n" +
                         "\n" +
-                        "INSERT INTO productivity.stats VALUES \n" +
+                        "INSERT INTO productivity.stats_named VALUES \n" +
                         eventsToInsert.joinToString(",\n"))
                     .execute().get()
 
@@ -93,7 +95,17 @@ class TrackerLog(private val eventsFilePath: String) {
         return this
     }
 
-    private fun getInsertString(event: TrackerEvent): String {
+    private fun getTaskName(): String {
+        val path = "./task.name"
+        if (FileUtil.exists(path)) {
+            val file = File(path);
+            return file.readText();
+        }
+
+        return "unknown";
+    }
+
+    private fun getInsertString(event: TrackerEvent, taskName: String): String {
         val json = Json.encodeToString(
             TrackerEventWithoutDate(
                 event.userName,
@@ -109,7 +121,7 @@ class TrackerLog(private val eventsFilePath: String) {
             )
         )
 
-        return "('$sessionId', '${event.time.toString("YYYY-MM-dd HH:mm:ss")}', '${event.userName}', '${event.type}', '$json')";
+        return "('$sessionId', '$taskName', '${event.time.toString("YYYY-MM-dd HH:mm:ss")}', '${event.userName}', '${event.type}', '$json')";
     }
 
     fun append(event: TrackerEvent?) {
