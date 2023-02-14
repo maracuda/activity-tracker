@@ -9,6 +9,8 @@ import com.clickhouse.client.ClickHouseProtocol
 import com.intellij.concurrency.JobScheduler
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.io.FileUtil
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -49,10 +51,11 @@ class TrackerLog(private val eventsFilePath: String) {
             }
         }
 
-        val taskName = getTaskName();
 
         val networkLogAppenderWork: () -> Unit = {
             try {
+                val taskName = getTaskName();
+
                 val endpoint = ClickHouseNode.of(
                     "mrkt-clkhs-1.dev.kontur.ru",
                     ClickHouseProtocol.HTTP,
@@ -96,10 +99,15 @@ class TrackerLog(private val eventsFilePath: String) {
     }
 
     private fun getTaskName(): String {
-        val path = "./task.name"
-        if (FileUtil.exists(path)) {
-            val file = File(path);
-            return file.readText();
+
+        val projectManager = ProjectManager.getInstanceIfCreated()
+        if (projectManager != null) {
+            val path = projectManager.openProjects[0].guessProjectDir()?.path + "./task.name";
+
+            if (FileUtil.exists(path)) {
+                val file = File(path);
+                return file.readText();
+            }
         }
 
         return "unknown";
